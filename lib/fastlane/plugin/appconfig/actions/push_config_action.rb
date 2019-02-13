@@ -21,6 +21,7 @@ module Fastlane
         git_repo                = params[:git_repo]
         git_ref                 = params[:git_ref]
         passphrase              = params[:passphrase]
+        project_path            = params[:project_path] || '.'
 
         title = 'Push Config'
         headings = ['Parameter', 'Value']
@@ -28,6 +29,7 @@ module Fastlane
         rows << ['bundle_id', bundle_id]
         rows << ['git_repo', git_repo]
         rows << ['git_ref', git_ref]
+        rows << ['project_path', project_path]
         table = Terminal::Table.new :title => title, :headings => headings, :rows => rows
         puts("\n" + table.to_s + "\n")
 
@@ -50,8 +52,8 @@ module Fastlane
 
         # Bundled files
         bundled_dst = "#{@@tmp_dir}/#{git_name}/#{bundle_id}"
-        copy_files(bundled_files, bundled_dst)
-        copy_and_encrypt_files(bundled_encrypted_files, bundled_dst, passphrase)
+        copy_files(bundled_files, bundled_dst, project_path)
+        copy_and_encrypt_files(bundled_encrypted_files, bundled_dst, project_path, passphrase)
 
         # Common files
         common_dst = "#{@@tmp_dir}/#{git_name}/common"
@@ -65,19 +67,19 @@ module Fastlane
         remove_tmp_dir_if_exists
       end
 
-      def self.copy_files(files, destination)
+      def self.copy_files(files, destination, project_path)
         files.each do |file|
           dst = "#{destination}/#{file}"
-          src = "#{Dir.pwd}/#{file}"
+          src = "#{Dir.pwd}/#{project_path}/#{file}"
           FileUtils.mkdir_p(File.dirname(dst))
           FileUtils.cp(src, dst)
         end
       end
 
-      def self.copy_and_encrypt_files(files, destination, passphrase)
+      def self.copy_and_encrypt_files(files, destination, project_path, passphrase)
         files.each do |file|
           dst = "#{destination}/#{file}"
-          src = "#{Dir.pwd}/#{file}"
+          src = "#{Dir.pwd}/#{project_path}/#{file}"
           FileUtils.mkdir_p(File.dirname(dst))
           FileUtils.cp(src, dst)
           encrypt(path: dst, password: passphrase)
@@ -89,7 +91,7 @@ module Fastlane
       end
 
       def self.description
-        'This action will push common, bundled, and encrypt them if necessary, to a configuration repo'
+        'This action will push common and bundled files, and encrypt them if necessary, to a configuration repo'
       end
 
       def self.authors
@@ -160,6 +162,13 @@ module Fastlane
             key: :passphrase,
             description: 'The passphrase used to encrypt the files',
             optional: false,
+            type: String
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :project_path,
+            default_value: '.',
+            description: 'The path to the project directory relative to the root directory (useful for React Native style setups where the root directory is not the project directory)',
+            optional: true,
             type: String
           )
         ]
