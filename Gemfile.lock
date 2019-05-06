@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fastlane-plugin-appconfig (0.3.0)
+    fastlane-plugin-appconfig (0.4.0)
       git
 
 GEM
