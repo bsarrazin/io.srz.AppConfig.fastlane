@@ -57,8 +57,8 @@ module Fastlane
 
         # Common files
         common_dst = "#{@@tmp_dir}/#{git_name}/common"
-        copy_files(common_files, common_dst)
-        copy_and_encrypt_files(common_encrypted_files, common_dst, passphrase)
+        copy_files(common_files, common_dst, project_path)
+        copy_and_encrypt_files(common_encrypted_files, common_dst, project_path, passphrase)
 
         # Commit the changes
         git.add
